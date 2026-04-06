@@ -6,7 +6,7 @@ import (
 
 type User struct {
 	fullName string
-	eMail    string
+	email    string
 	password string
 	phone    string
 	photoURL string
@@ -16,10 +16,10 @@ type User struct {
 }
 
 func NewUser(
-	fullName, eMail, password, phone, photoURL, role string) *User {
+	fullName, email, password, phone, photoURL, role string) *User {
 	return &User{
 		fullName: fullName,
-		eMail:    eMail,
+		email:    email,
 		password: password,
 		phone:    phone,
 		photoURL: photoURL,

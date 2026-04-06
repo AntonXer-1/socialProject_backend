@@ -3,6 +3,7 @@ package dto
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"time"
 )
@@ -14,32 +15,22 @@ var ErrPasswordIsEmpty = errors.New("password is empty")
 var ErrRoleIsEmpty = errors.New("the role is empty")
 
 type ErrorDTO struct {
-	message string
-	time    time.Time
+	Message string    `json:"message"`
+	Time    time.Time `json:"time"`
 }
 
 func NewErrorDTO(message string) *ErrorDTO {
 	return &ErrorDTO{
-		message: message,
-		time:    time.Now(),
+		Message: message,
+		Time:    time.Now(),
 	}
 }
 
-func (e *ErrorDTO) ErrorDTOToString() string {
-	b, err := json.MarshalIndent(e, "", "    ")
-	if err != nil {
-		panic(err)
-	}
-	return string(b)
-}
-
-func SendError(err error, w http.ResponseWriter, r *http.Request) {
+func ErrorBadRequest(err error, w http.ResponseWriter) {
 	errDTO := NewErrorDTO(err.Error())
-	if err == ErrBadRequest || err == ErrFullNameIsEmpty ||
-		err == ErrInvalidEmail || err == ErrPasswordIsEmpty ||
-		err == ErrRoleIsEmpty {
-		http.Error(w, errDTO.ErrorDTOToString(), http.StatusBadRequest)
-	} else {
-		http.Error(w, errDTO.ErrorDTOToString(), http.StatusInternalServerError)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusBadRequest)
+	if err := json.NewEncoder(w).Encode(errDTO); err != nil {
+		log.Printf("(SERVER ERROR) failed to encode error response: %v", err)
 	}
 }
