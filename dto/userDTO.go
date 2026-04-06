@@ -3,38 +3,44 @@ package dto
 import "strings"
 
 type UserDTO struct {
-	fullName string
-	eMail    string
-	password string
-	phone    string
-	photoURL string
-	role     string
+	FullName string `json:"full_name"`
+	Email    string `json:"email"`
+	Password string `json:"pass"`
+	Phone    string `json:"phone"`
+	PhotoURL string `json:"photo"`
+	Role     string `json:"role"`
 }
 
 // ниже - функции для валидации корректности ввёденных пользователем данных
 // для регистрации и авторизации соответственно
 func (u *UserDTO) ValidationForRegistration() error {
-	if u.fullName == "" {
+	if u.FullName == "" {
 		return ErrFullNameIsEmpty
 	}
-	if u.eMail == "" || strings.Contains(u.eMail, "@gmail.com") {
+	if u.Email == "" || !strings.Contains(u.Email, "@gmail.com") {
 		return ErrInvalidEmail
 	}
-	if u.password == "" {
+	if u.Password == "" {
 		return ErrPasswordIsEmpty
 	}
-	if u.role == "" {
+	if u.Role == "" {
 		return ErrRoleIsEmpty
 	}
 	return nil
 }
 
 func (u *UserDTO) ValidationForAuthorization() error {
-	if u.eMail == "" || strings.Contains(u.eMail, "@gmail.com") {
+	if u.Email == "" || strings.Contains(u.Email, "@gmail.com") {
 		return ErrInvalidEmail
 	}
-	if u.password == "" {
+	if u.Password == "" {
 		return ErrPasswordIsEmpty
 	}
 	return nil
+}
+
+type UserResponseDTO struct {
+	ID       int    `json:"id"`
+	FullName string `json:"full_name"`
+	Email    string `json:"email"`
 }

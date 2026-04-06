@@ -1,3 +1,3 @@
-module socialProjrct_backend
+module socialProject_backend
 
 go 1.26
