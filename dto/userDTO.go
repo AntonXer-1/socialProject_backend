@@ -40,7 +40,6 @@ func (u *UserDTO) ValidationForAuthorization() error {
 }
 
 type UserResponseDTO struct {
-	ID       int    `json:"id"`
 	FullName string `json:"full_name"`
 	Email    string `json:"email"`
 }
