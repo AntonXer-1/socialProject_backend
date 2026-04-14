@@ -12,14 +12,15 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type HttpHandler struct {
+type HTTPHandler struct {
 	conn *pgx.Conn
 	ctx  context.Context
 }
 
-func CreateHttpHandler(conn *pgx.Conn, ctx context.Context) *HttpHandler {
-	return &HttpHandler{conn: conn,
-		ctx: ctx,
+func CreateHTTPHandler(conn *pgx.Conn, ctx context.Context) *HTTPHandler {
+	return &HTTPHandler{
+		conn: conn,
+		ctx:  ctx,
 	}
 }
 
@@ -36,30 +37,40 @@ failed:
   - status code: 400, 409, 500, ...
   - response body: JSON with error + time
 */
-func (h *HttpHandler) HandleRegistration(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) HandleRegistration(w http.ResponseWriter, r *http.Request) {
 	userDTO := dto.UserDTO{}
+
 	if err := json.NewDecoder(r.Body).Decode(&userDTO); err != nil {
 		dto.ErrorBadRequest(err, w)
 		return
 	}
+
 	if err := userDTO.ValidationForRegistration(); err != nil {
 		dto.ErrorBadRequest(err, w)
 		return
 	}
-	newUser := user.NewUser(userDTO.FullName,
-		userDTO.Email, userDTO.Password,
-		userDTO.Phone, userDTO.PhotoURL, userDTO.Role)
+
+	newUser := user.NewUser(
+		userDTO.FullName,
+		userDTO.Email,
+		userDTO.Password,
+		userDTO.Phone,
+		userDTO.PhotoURL,
+		userDTO.Role)
 
 	// check user in database
 	status, err := database.CheckUser(h.conn, h.ctx, newUser.Email, newUser.Role)
 	if err != nil {
 		http.Error(w, "user verification error", http.StatusInternalServerError)
+		return
 	}
 
 	if status {
-		response := dto.CreatAnser(false, "This user exists in database")
+		response := dto.NewErrorDTO("This user exists in database")
 		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			log.Printf("(SERVER ERROR) failed to encode user response: %v", err)
+		}
 		return
 	}
 
@@ -67,6 +78,7 @@ func (h *HttpHandler) HandleRegistration(w http.ResponseWriter, r *http.Request)
 	er := database.AddUser(h.conn, h.ctx, newUser)
 	if er != nil {
 		http.Error(w, "Error adding user", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -95,19 +107,23 @@ failed:
   - response body: JSON with error + time
 */
 
-func (h *HttpHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
-	ur := dto.UserDTO{}
-	if err := json.NewDecoder(r.Body).Decode(&ur); err != nil {
+func (h *HTTPHandler) HandleAuthorization(w http.ResponseWriter, r *http.Request) {
+	userDTO := dto.UserDTO{}
+	if err := json.NewDecoder(r.Body).Decode(&userDTO); err != nil {
 		dto.ErrorBadRequest(err, w)
 	}
 
-	ans, err := database.CheckUser(h.conn, h.ctx, ur.Email, ur.Role)
+	ans, err := database.CheckUser(h.conn, h.ctx, userDTO.Email, userDTO.Role)
 	if err != nil {
 		http.Error(w, "user verification error", http.StatusInternalServerError)
+		return
 	}
 
-	response := dto.CreatAnser(ans, "User authenticated status")
+	response := dto.CreateAnswer(ans, "User authenticated status")
 
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("(SERVER ERROR) failed to encode user response: %v", err)
+		return
+	}
 }

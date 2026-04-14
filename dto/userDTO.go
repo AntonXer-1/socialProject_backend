@@ -11,8 +11,6 @@ type UserDTO struct {
 	Role     string `json:"role"`
 }
 
-// ниже - функции для валидации корректности ввёденных пользователем данных
-// для регистрации и авторизации соответственно
 func (u *UserDTO) ValidationForRegistration() error {
 	if u.FullName == "" {
 		return ErrFullNameIsEmpty

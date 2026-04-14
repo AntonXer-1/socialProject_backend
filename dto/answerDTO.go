@@ -8,7 +8,7 @@ type AnswerDTO struct {
 	Tm      time.Time `json:"time"`
 }
 
-func CreatAnser(status bool, massage string) *AnswerDTO {
+func CreateAnswer(status bool, massage string) *AnswerDTO {
 	return &AnswerDTO{
 		Status:  status,
 		Massage: massage,
