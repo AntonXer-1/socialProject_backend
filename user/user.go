@@ -5,26 +5,26 @@ import (
 )
 
 type User struct {
-	fullName string
-	email    string
-	password string
-	phone    string
-	photoURL string
-	role     string
+	FullName string
+	Email    string
+	Password string
+	Phone    string
+	PhotoURL string
+	Role     string
 
-	createdAt time.Time
+	CreatedAt time.Time
 }
 
 func NewUser(
 	fullName, email, password, phone, photoURL, role string) *User {
 	return &User{
-		fullName: fullName,
-		email:    email,
-		password: password,
-		phone:    phone,
-		photoURL: photoURL,
-		role:     role,
+		FullName: fullName,
+		Email:    email,
+		Password: password,
+		Phone:    phone,
+		PhotoURL: photoURL,
+		Role:     role,
 
-		createdAt: time.Now(),
+		CreatedAt: time.Now(),
 	}
 }

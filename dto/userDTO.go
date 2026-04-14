@@ -11,8 +11,6 @@ type UserDTO struct {
 	Role     string `json:"role"`
 }
 
-// ниже - функции для валидации корректности ввёденных пользователем данных
-// для регистрации и авторизации соответственно
 func (u *UserDTO) ValidationForRegistration() error {
 	if u.FullName == "" {
 		return ErrFullNameIsEmpty
@@ -40,7 +38,6 @@ func (u *UserDTO) ValidationForAuthorization() error {
 }
 
 type UserResponseDTO struct {
-	ID       int    `json:"id"`
 	FullName string `json:"full_name"`
 	Email    string `json:"email"`
 }
