@@ -59,7 +59,7 @@ func (h *HTTPHandler) HandleRegistration(w http.ResponseWriter, r *http.Request)
 		userDTO.Role)
 
 	// check user in database
-	status, err := database.CheckUser(h.conn, h.ctx, newUser.Email, newUser.Role)
+	status, err := database.CheckRegisterUser(h.conn, h.ctx, userDTO.Email, userDTO.Role)
 	if err != nil {
 		http.Error(w, "user verification error", http.StatusInternalServerError)
 		return
@@ -113,16 +113,16 @@ func (h *HTTPHandler) HandleAuthorization(w http.ResponseWriter, r *http.Request
 		dto.ErrorBadRequest(err, w)
 	}
 
-	ans, err := database.CheckUser(h.conn, h.ctx, userDTO.Email, userDTO.Role)
+	ans, err := database.CheckUserAuthorization(h.conn, h.ctx, userDTO.Email, userDTO.Role)
 	if err != nil {
-		http.Error(w, "user verification error", http.StatusInternalServerError)
+		response := dto.CreateAnswer(false, "user not found in database")
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
 
-	response := dto.CreateAnswer(ans, "User authenticated status")
-
 	w.WriteHeader(http.StatusAccepted)
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	if err := json.NewEncoder(w).Encode(ans); err != nil {
 		log.Printf("(SERVER ERROR) failed to encode user response: %v", err)
 		return
 	}

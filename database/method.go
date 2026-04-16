@@ -29,7 +29,7 @@ func AddUser(conn *pgx.Conn, ctx context.Context, new_user *user.User) error {
 	return nil
 }
 
-func CheckUser(conn *pgx.Conn, ctx context.Context, user_email string, user_role string) (bool, error) {
+func CheckRegisterUser(conn *pgx.Conn, ctx context.Context, user_email, user_role string) (bool, error) {
 	query := `
 		SELECT EXISTS (
 		    SELECT 1
@@ -46,4 +46,29 @@ func CheckUser(conn *pgx.Conn, ctx context.Context, user_email string, user_role
 	}
 
 	return exists, nil
+}
+
+func CheckUserAuthorization(conn *pgx.Conn, ctx context.Context, user_email, user_role string) (*user.User, error) {
+	query := `
+		SELECT *
+		FROM users
+		WHERE email = $1 AND role = $2
+		`
+
+	var user user.User
+	err := conn.QueryRow(ctx, query, user_email, user_role).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Password,
+		&user.FullName,
+		&user.PhotoURL,
+		&user.Role,
+		&user.CreatedAt)
+
+	if err != nil {
+		log.Printf("Error checking user: %v", err)
+		return nil, err
+	}
+
+	return &user, nil
 }
